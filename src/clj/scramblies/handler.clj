@@ -1,9 +1,11 @@
 (ns scramblies.handler
   (:require
-   [reitit.ring :as reitit-ring]
-   [scramblies.middleware :refer [middleware]]
-   [hiccup.page :refer [include-js include-css html5]]
-   [config.core :refer [env]]))
+    [clojure.walk :refer [keywordize-keys]]
+    [reitit.ring :as reitit-ring]
+    [scramblies.middleware :refer [middleware]]
+    [hiccup.page :refer [include-js include-css html5]]
+    [config.core :refer [env]]
+    [scramblies.util :refer [scramble?]]))
 
 (def mount-target
   [:div#app
@@ -32,16 +34,32 @@
    :headers {"Content-Type" "text/html"}
    :body (loading-page)})
 
+(defn scramble-handler
+  [request]
+  (try
+    (let [{:keys [str1 str2]} (-> request (get :query-params) (keywordize-keys))
+          result (scramble? str1 str2)]
+      (when (or (nil? str1) (nil? str2))
+        (throw (new Exception "Invalid input")))
+      {:status  200
+       :headers {"Content-Type" "text/html"}
+       :body    (str result)})
+    (catch Exception e
+      {:status  500
+       :headers {"Content-Type" "text/html"}
+       :body    (.getMessage e)})))
+
 (def app
   (reitit-ring/ring-handler
-   (reitit-ring/router
-    [["/" {:get {:handler index-handler}}]
-     ["/items"
-      ["" {:get {:handler index-handler}}]
-      ["/:item-id" {:get {:handler index-handler
-                          :parameters {:path {:item-id int?}}}}]]
-     ["/about" {:get {:handler index-handler}}]])
-   (reitit-ring/routes
-    (reitit-ring/create-resource-handler {:path "/" :root "/public"})
-    (reitit-ring/create-default-handler))
-   {:middleware middleware}))
+    (reitit-ring/router
+      [["/" {:get {:handler index-handler}}]
+       ["/scramble" {:get {:handler scramble-handler}}]
+       ["/items"
+        ["" {:get {:handler index-handler}}]
+        ["/:item-id" {:get {:handler    index-handler
+                            :parameters {:path {:item-id int?}}}}]]
+       ["/about" {:get {:handler index-handler}}]])
+    (reitit-ring/routes
+      (reitit-ring/create-resource-handler {:path "/" :root "/public"})
+      (reitit-ring/create-default-handler))
+    {:middleware middleware}))

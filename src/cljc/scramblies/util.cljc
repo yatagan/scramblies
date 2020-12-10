@@ -14,13 +14,14 @@
     str))
 
 (defn scramble? [str1 str2]
-  (let [letters-counts1 (letters-counts str1)
-        letters-counts2 (letters-counts str2)]
-    (loop [letters str2]
-      (if (empty? letters)
-        true
-        (let [[letter & rest-letters] letters]
-          (if (< (get letters-counts1 letter 0)
-                 (get letters-counts2 letter))
-            false
-            (recur (rest rest-letters))))))))
+  (when (and (string? str1) (string? str2))
+    (let [letters-counts1 (letters-counts str1)
+          letters-counts2 (letters-counts str2)]
+      (loop [letters str2]
+        (if (empty? letters)
+          true
+          (let [[letter & rest-letters] letters]
+            (if (< (get letters-counts1 letter 0)
+                   (get letters-counts2 letter))
+              false
+              (recur (rest rest-letters)))))))))

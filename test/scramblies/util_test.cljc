@@ -5,4 +5,6 @@
 (deftest scramble-test
   (is (= (scramble? "rekqodlw" "world") true))
   (is (= (scramble? "cedewaraaossoqqyt" "codewars") true))
-  (is (= (scramble? "katas" "steak") false)))
+  (is (= (scramble? "katas" "steak") false))
+
+  (is (= (scramble? nil 123) nil)))
