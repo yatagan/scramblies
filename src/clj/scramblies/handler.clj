@@ -54,10 +54,6 @@
     (reitit-ring/router
       [["/" {:get {:handler index-handler}}]
        ["/scramble" {:get {:handler scramble-handler}}]
-       ["/items"
-        ["" {:get {:handler index-handler}}]
-        ["/:item-id" {:get {:handler    index-handler
-                            :parameters {:path {:item-id int?}}}}]]
        ["/about" {:get {:handler index-handler}}]])
     (reitit-ring/routes
       (reitit-ring/create-resource-handler {:path "/" :root "/public"})

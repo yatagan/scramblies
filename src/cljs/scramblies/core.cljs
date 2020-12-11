@@ -11,25 +11,7 @@
    [cljs.core.async :refer [<!]]))
 
 ;; -------------------------
-;; Routes
-
-(def router
-  (reitit/router
-   [["/" :index]
-    ["/items"
-     ["" :items]
-     ["/:item-id" :item]]
-    ["/about" :about]]))
-
-(defn path-for [route & [params]]
-  (if params
-    (:path (reitit/match-by-name router route params))
-    (:path (reitit/match-by-name router route))))
-
-;; -------------------------
 ;; Page components
-
-
 
 (defn- atom-input [value placeholder]
   [:input {:type "text"
@@ -52,41 +34,22 @@
         [atom-input !str2 :str2]
         [:button {:on-click #(fetch-scramble @!str1 @!str2 js/alert)} "scramble?"]]])))
 
-
-
-(defn home-page []
-  (fn []
-    [:span.main
-     [:h1 "Welcome to scramblies"]
-     [:ul
-      [:li [:a {:href (path-for :items)} "Items of scramblies"]]
-      [:li [:a {:href "/broken/link"} "Broken link"]]]]))
-
-
-
-(defn items-page []
-  (fn []
-    [:span.main
-     [:h1 "The items of scramblies"]
-     [:ul (map (fn [item-id]
-                 [:li {:name (str "item-" item-id) :key (str "item-" item-id)}
-                  [:a {:href (path-for :item {:item-id item-id})} "Item: " item-id]])
-               (range 1 60))]]))
-
-
-(defn item-page []
-  (fn []
-    (let [routing-data (session/get :route)
-          item (get-in routing-data [:route-params :item-id])]
-      [:span.main
-       [:h1 (str "Item " item " of scramblies")]
-       [:p [:a {:href (path-for :items)} "Back to the list of items"]]])))
-
-
 (defn about-page []
   (fn [] [:span.main
           [:h1 "About scramblies"]]))
 
+;; -------------------------
+;; Routes
+
+(def router
+  (reitit/router
+    [["/" :index]
+     ["/about" :about]]))
+
+(defn path-for [route & [params]]
+  (if params
+    (:path (reitit/match-by-name router route params))
+    (:path (reitit/match-by-name router route))))
 
 ;; -------------------------
 ;; Translate routes -> page components
@@ -94,10 +57,7 @@
 (defn page-for [route]
   (case route
     :index #'scramble-page
-    :about #'about-page
-    :items #'items-page
-    :item #'item-page))
-
+    :about #'about-page))
 
 ;; -------------------------
 ;; Page mounting component
