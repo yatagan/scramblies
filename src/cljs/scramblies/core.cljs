@@ -1,11 +1,14 @@
 (ns scramblies.core
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]
    [reagent.session :as session]
    [reitit.frontend :as reitit]
    [clerk.core :as clerk]
-   [accountant.core :as accountant]))
+   [accountant.core :as accountant]
+   [cljs-http.client :as http]
+   [cljs.core.async :refer [<!]]))
 
 ;; -------------------------
 ;; Routes
@@ -25,6 +28,31 @@
 
 ;; -------------------------
 ;; Page components
+
+
+
+(defn- atom-input [value placeholder]
+  [:input {:type "text"
+           :value @value
+           :on-change #(reset! value (-> % .-target .-value))
+           :placeholder placeholder}])
+
+(defn- fetch-scramble [str1 str2 callback]
+  (go (let [response (<! (http/get "/scramble"
+                                   {:query-params {:str1 str1 :str2 str2}}))]
+        (callback (:body response)))))
+
+(defn scramble-page []
+  (let [!str1 (reagent/atom "")
+        !str2 (reagent/atom "")]
+    (fn []
+      [:span.main
+       [:div
+        [atom-input !str1 :str1]
+        [atom-input !str2 :str2]
+        [:button {:on-click #(fetch-scramble @!str1 @!str2 js/alert)} "scramble?"]]])))
+
+
 
 (defn home-page []
   (fn []
@@ -65,7 +93,7 @@
 
 (defn page-for [route]
   (case route
-    :index #'home-page
+    :index #'scramble-page
     :about #'about-page
     :items #'items-page
     :item #'item-page))

@@ -7,4 +7,5 @@
   (is (= (scramble? "cedewaraaossoqqyt" "codewars") true))
   (is (= (scramble? "katas" "steak") false))
 
-  (is (= (scramble? nil 123) nil)))
+  (is (= (scramble? nil 123) false))
+  (is (= (scramble? "" "") false)))
